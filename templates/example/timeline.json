@@ -1,0 +1,18 @@
+{
+  "name": "example",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "bpm": 120,
+  "beats": 16,
+  "beats_per_bar": 4,
+  "blur": { "samples": 2, "shutter": 0.5 },
+  "hold": 1,
+  "pace": "",
+  "scenes": [
+    { "id": "hello", "from": 0, "to": 6 },
+    { "id": "cards", "from": 6, "to": 11 },
+    { "id": "end", "from": 11, "to": 16 }
+  ],
+  "cues": []
+}

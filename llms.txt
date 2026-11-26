@@ -1,0 +1,18 @@
+# Kinora
+
+> Kinora (Kinora) is a local video editor for motion videos written as code. A person edits by hand (click anything in the video to see and change the code that draws it, notes on frames, sound per track, texts, export) and an agent does the same through MCP, seeing exactly what the person sees.
+
+Status: local only, not published yet.
+
+## For agents
+
+- [Agents guide](/AGENTS.md): how to connect over MCP (Claude Code, Codex, Cursor), units and every tool (`open`, `status`, `get_frame`, `contact_sheet`, `list_elements`, `inspect_point`, `find_element`, `edit_literal`, `set_text_style`, `export` and more)
+
+## What it does
+
+- Inspector that maps any pixel of a frame to the function and line of code that drew it, with live knobs for numbers, colors and texts
+- Notes on points, zones and time ranges, answered by an agent with the frame as context
+- Sound instrumented per track from `sound.py`, with free sounds and music from Openverse
+- Text editor on the video: content, font, weight, size, color, alignment, written back to the code
+- Export to MP4, WebM, GIF, PNG sequence or a frame, with platform presets and up to 60 real fps
+- Undo and redo where one agent request is one step

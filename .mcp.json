@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kinora": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/kinora-mcp.js"]
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "kinora",
+  "version": "0.5.0",
+  "type": "module",
+  "bin": {
+    "kinora": "server/kinora-server.js"
+  },
+  "scripts": {
+    "start": "node server/kinora-server.js",
+    "dev": "node server/index.js",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "iconsax-reactjs": "^0.0.8",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.2",
+    "vite": "^8.3.1"
+  },
+  "description": "Kinora. A local video editor for motion made with code, with Claude inside.",
+  "license": "MIT",
+  "author": "Sebastián Atanes",
+  "contributors": ["uxKero"],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sebatanes/kinora"
+  },
+  "keywords": [
+    "video editor",
+    "motion graphics",
+    "canvas",
+    "claude",
+    "claude-code",
+    "mcp",
+    "plugin",
+    "ai video"
+  ]
+}

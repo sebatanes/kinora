@@ -1,0 +1,7 @@
+node_modules/
+.estudio/
+__pycache__/
+out/
+.env
+.env.*
+*.log

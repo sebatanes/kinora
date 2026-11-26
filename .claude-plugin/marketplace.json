@@ -1,0 +1,7 @@
+{
+  "name": "sebastian-atanes",
+  "owner": { "name": "Sebastián Atanes" },
+  "plugins": [
+    { "name": "kinora", "source": "./", "description": "Kinora. Local video editor with Claude live." }
+  ]
+}

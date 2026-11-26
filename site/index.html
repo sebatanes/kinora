@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinora — a video editor for videos made with code</title>
+<meta name="description" content="Kinora opens videos made with code like a timeline. Click anything on the video to reach the code that draws it, and let Claude change what you point at. Runs on your computer.">
+<meta property="og:title" content="Kinora">
+<meta property="og:description" content="A video editor for videos made with code, with Claude inside.">
+<meta property="og:image" content="assets/editor.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%224%22 width=%2220%22 height=%2216%22 rx=%224%22 fill=%22%23000000%22/%3E%3Cpath d=%22M10 9v6l5-3z%22 fill=%22%23ffffff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --soft: #f5f5f4;
+    --line: #ebebea;
+    --line-2: #e1e1df;
+    --text: #0c0a09;
+    --text-2: #44403c;
+    --mute: #78716c;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05);
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; letter-spacing: -0.006em; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.94); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+  nav.scrolled { border-bottom-color: var(--line); }
+  nav .wrap { display: flex; align-items: center; height: 64px; gap: 32px; }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 17px; letter-spacing: -0.02em; }
+  .logo svg { width: 22px; height: 22px; }
+  .links { display: flex; gap: 24px; font-size: 14.5px; color: var(--text-2); }
+  .links a:hover { color: var(--text); }
+  .grow { flex: 1; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; font-weight: 500; font-size: 14.5px; transition: background 0.15s, transform 0.15s; white-space: nowrap; }
+  .btn:active { transform: scale(0.97); }
+  .btn.dark { background: #000; color: #fff; box-shadow: var(--shadow-sm); }
+  .btn.dark:hover { background: #292524; }
+  .btn.light { background: var(--bg); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); }
+  .btn.light:hover { background: var(--soft); }
+  .btn.lg { height: 48px; padding: 0 24px; font-size: 15.5px; }
+
+  /* Hero */
+  .hero { position: relative; padding: 96px 0 40px; text-align: center; overflow-x: clip; }
+  .orbs { position: absolute; inset: -120px 0 auto; height: 620px; pointer-events: none; z-index: -1; }
+  .orbs i { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.55; }
+  .orbs i:nth-child(1) { width: 420px; height: 420px; left: 12%; top: 80px; background: #c7d2fe; }
+  .orbs i:nth-child(2) { width: 380px; height: 380px; right: 10%; top: 40px; background: #fed7aa; }
+  .orbs i:nth-child(3) { width: 320px; height: 320px; left: 42%; top: 220px; background: #fbcfe8; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.7); border: 1px solid var(--line); font-size: 13.5px; color: var(--text-2); box-shadow: var(--shadow-sm); }
+  .eyebrow b { background: #000; color: #fff; font-weight: 500; font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+  h1 { font-size: clamp(40px, 6.4vw, 72px); line-height: 1.04; letter-spacing: -0.045em; font-weight: 600; margin: 24px auto 20px; max-width: 880px; }
+  .lead { font-size: clamp(17px, 2vw, 19.5px); color: var(--text-2); max-width: 640px; margin: 0 auto 36px; }
+  .ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .shot { margin: 64px auto 0; max-width: 1120px; border-radius: 18px; border: 1px solid var(--line); box-shadow: var(--shadow-lg); overflow: hidden; background: var(--bg); }
+  .shot-bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); background: #fcfcfc; }
+  .shot-bar span { width: 11px; height: 11px; border-radius: 50%; background: var(--line-2); }
+
+  /* Sections */
+  section { padding: 112px 0 0; }
+  .kicker { font-size: 13.5px; font-weight: 500; color: var(--mute); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; }
+  h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; margin: 0 0 16px; max-width: 720px; }
+  .sub { color: var(--text-2); font-size: 17px; max-width: 620px; margin: 0; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+  .card { padding: 28px; border-radius: 18px; background: var(--soft); border: 1px solid transparent; transition: border-color 0.15s, background 0.15s; }
+  .card:hover { background: var(--bg); border-color: var(--line-2); }
+  .card .ic { width: 40px; height: 40px; border-radius: 11px; background: var(--bg); display: grid; place-items: center; box-shadow: var(--shadow-sm), 0 0 0 1px var(--line); margin-bottom: 20px; }
+  .card h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px; }
+  .card p { margin: 0; color: var(--text-2); font-size: 15px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; counter-reset: s; }
+  .step { border-top: 1px solid var(--line-2); padding-top: 24px; }
+  .step::before { counter-increment: s; content: '0' counter(s); font: 500 13px var(--mono); color: var(--mute); }
+  .step h3 { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; margin: 12px 0 8px; }
+  .step p { margin: 0; color: var(--text-2); font-size: 15.5px; }
+
+  /* Install */
+  .install { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: start; }
+  .tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--soft); border-radius: 999px; margin-bottom: 14px; }
+  .tabs button { font: inherit; font-size: 14px; font-weight: 500; border: 0; background: none; color: var(--mute); height: 34px; padding: 0 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button.on { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm), 0 0 0 1px var(--line); }
+  .code { position: relative; background: #0c0a09; color: #e7e5e4; border-radius: 16px; padding: 22px 24px; font: 14px/1.8 var(--mono); overflow-x: auto; }
+  .code pre { margin: 0; white-space: pre; }
+  .code .c { color: #78716c; }
+  .copy { position: absolute; top: 12px; right: 12px; font: 500 12.5px var(--sans); color: #e7e5e4; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; height: 30px; padding: 0 12px; cursor: pointer; }
+  .copy:hover { background: rgba(255, 255, 255, 0.14); }
+  .panel[hidden] { display: none; }
+  .reqs { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 10px; }
+  .reqs li { display: flex; align-items: center; gap: 10px; color: var(--text-2); font-size: 15px; }
+  .reqs li::before { content: ''; width: 18px; height: 18px; border-radius: 50%; background: #000 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center / 11px no-repeat; flex: none; }
+  .reqs a { color: var(--text); border-bottom: 1px solid var(--line-2); }
+
+  /* CTA + footer */
+  .final { margin: 128px 0 0; padding: 72px 32px; border-radius: 28px; background: #0c0a09; color: #fff; text-align: center; position: relative; overflow: hidden; }
+  .final::before { content: ''; position: absolute; width: 520px; height: 520px; left: 50%; top: -340px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle, rgba(199, 210, 254, 0.35), transparent 65%); }
+  .final h2 { margin: 0 auto 14px; color: #fff; position: relative; }
+  .final p { color: #a8a29e; margin: 0 auto 32px; max-width: 520px; position: relative; }
+  .final .btn.dark { background: #fff; color: #000; position: relative; }
+  .final .btn.dark:hover { background: #e7e5e4; }
+  footer { padding: 48px 0; color: var(--mute); font-size: 14px; }
+  footer .wrap { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 860px) {
+    .links { display: none; }
+    .grid, .steps { grid-template-columns: 1fr; }
+    .install { grid-template-columns: 1fr; gap: 32px; }
+    .hero { padding-top: 64px; }
+    section { padding-top: 80px; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 16px; }
+    nav .btn.light { display: none; }
+    .final { padding: 56px 20px; border-radius: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:active { transform: none; } }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="logo" href="#"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="4" fill="#000"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>Kinora</a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
+    </div>
+    <span class="grow"></span>
+    <a class="btn light" href="https://github.com/sebatanes/kinora">GitHub</a>
+    <a class="btn dark" href="#install">Get Kinora</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="orbs"><i></i><i></i><i></i></div>
+  <div class="wrap">
+    <span class="eyebrow"><b>Free</b> Open source · runs on your computer</span>
+    <h1>The video editor for videos made with code</h1>
+    <p class="lead">Kinora opens code-made videos like a timeline. Click anything on screen to reach the line that draws it, and let Claude change what you point at.</p>
+    <div class="ctas">
+      <a class="btn dark lg" href="#install">Install for Claude Code</a>
+      <a class="btn light lg" href="https://github.com/sebatanes/kinora">View on GitHub</a>
+    </div>
+    <div class="shot">
+      <div class="shot-bar"><span></span><span></span><span></span></div>
+      <img src="assets/editor.jpg" width="3200" height="1520" alt="The Kinora editor with a circle selected on the video and the inspector showing the code that draws it, above the timeline">
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <p class="kicker">Features</p>
+    <h2>Change one thing without rewriting everything</h2>
+    <p class="sub">The title is a little big, a sound comes in late, the ball should be orange. Fix it on the video, not in a hunt through the code.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l7 17 2.5-7.5L21 11z"/></svg></div>
+        <h3>Click to code</h3>
+        <p>Every element on the video leads to the line that draws it. Drag a number, pick a color, retype a string.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></div>
+        <h3>Claude in the editor</h3>
+        <p>Claude sees the frame you are looking at, changes what you point at, and every request is one undo step.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></div>
+        <h3>Texts on the video</h3>
+        <p>Retype any text in place and change its font, weight, size, color and alignment right on the frame.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <h3>Sound by track</h3>
+        <p>One lane per track, mute and solo, plus free sounds and music with the credits written for you.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg></div>
+        <h3>Export anywhere</h3>
+        <p>MP4, WebM, GIF or PNG, with presets for YouTube, Reels, TikTok, X and 37 more, up to 60 real fps.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></div>
+        <h3>51 MCP tools</h3>
+        <p>Everything the interface does is available to agents: Claude Code, Codex, Cursor or any MCP client.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2>Your code, your computer, your Claude account</h2>
+    <div class="steps">
+      <div class="step">
+        <h3>Open a video</h3>
+        <p>Point Kinora at a folder with a video made with code, or start from the example and a short tour.</p>
+      </div>
+      <div class="step">
+        <h3>Click what you want to change</h3>
+        <p>Edit values by hand, or leave a note on a frame, a zone or a range and ask Claude to handle it.</p>
+      </div>
+      <div class="step">
+        <h3>Export</h3>
+        <p>Pick a platform preset and render locally. Nothing leaves your machine unless you ask it to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap install">
+    <div>
+      <p class="kicker">Install</p>
+      <h2>Up and running in a minute</h2>
+      <p class="sub">Nothing to install with npm: the server, the MCP server and the interface come built. Kinora uses the <code>claude</code> command signed in with your own account, and never sees a key.</p>
+      <ul class="reqs">
+        <li><a href="https://nodejs.org">Node.js 20+</a></li>
+        <li><a href="https://www.python.org/downloads/">Python 3.10+</a></li>
+        <li><a href="https://ffmpeg.org">ffmpeg</a></li>
+        <li><span><a href="https://claude.com/claude-code">Claude Code</a>, signed in</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="tabs" role="tablist">
+        <button class="on" data-tab="plugin" role="tab">Claude Code plugin</button>
+        <button data-tab="local" role="tab">Standalone</button>
+        <button data-tab="mcp" role="tab">Other agents</button>
+      </div>
+      <div class="panel" data-panel="plugin">
+        <div class="code"><button class="copy">Copy</button><pre>/plugin marketplace add sebatanes/kinora
+/plugin install kinora@sebastian-atanes
+<span class="c"># then</span>
+/kinora</pre></div>
+      </div>
+      <div class="panel" data-panel="local" hidden>
+        <div class="code"><button class="copy">Copy</button><pre>git clone https://github.com/sebatanes/kinora.git
+node kinora/server/kinora-server.js
+<span class="c"># open http://127.0.0.1:4870</span></pre></div>
+      </div>
+      <div class="panel" data-panel="mcp" hidden>
+        <div class="code"><button class="copy">Copy</button><pre>{
+  "mcpServers": {
+    "kinora": {
+      "command": "node",
+      "args": ["/path/to/kinora/server/kinora-mcp.js"]
+    }
+  }
+}</pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="final">
+    <h2>Stop re-prompting. Start editing.</h2>
+    <p>Free and open source under the MIT License.</p>
+    <a class="btn dark lg" href="https://github.com/sebatanes/kinora">Get Kinora on GitHub</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Made by <a href="https://github.com/sebatanes">Sebastián Atanes</a> together with uxKero</span>
+    <span class="grow"></span>
+    <a href="https://github.com/sebatanes/kinora">GitHub</a>
+    <a href="https://github.com/sebatanes/kinora/blob/main/LICENSE">MIT License</a>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', scrollY > 8);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.panel').forEach(p => p.hidden = p.dataset.panel !== b.dataset.tab);
+  }));
+
+  document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', async () => {
+    const text = btn.nextElementSibling.innerText.split('\n').filter(l => !l.trim().startsWith('#')).join('\n').trim();
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+    catch { btn.textContent = 'Select and copy'; }
+    setTimeout(() => btn.textContent = 'Copy', 1600);
+  }));
+</script>
+</body>
+</html>
